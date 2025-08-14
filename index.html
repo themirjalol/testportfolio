@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔊 Advanced Text Reader</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#00c6ff" />
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        textarea, select, input[type=range] {
+            padding: 12px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            background-color: #ffffff;
+            color: #0072ff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #d0eaff;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔊 Advanced Text Reader</h1>
+
+    <textarea id="textInput" rows="5" placeholder="Type or paste text here..." onkeydown="handleKey(event)"></textarea>
+
+    <select id="languageSelect">
+        <option value="en-US">English (US)</option>
+        <option value="uz-UZ">Uzbek</option>
+        <option value="ru-RU">Russian</option>
+    </select>
+
+    <label for="rateRange">Speed: <span id="rateValue">1</span></label>
+    <input type="range" id="rateRange" min="0.5" max="2" step="0.1" value="1" oninput="updateRateDisplay()" />
+
+    <label for="pitchRange">Pitch: <span id="pitchValue">1</span></label>
+    <input type="range" id="pitchRange" min="0" max="2" step="0.1" value="1" oninput="updatePitchDisplay()" />
+
+    <div>
+        <button onclick="speakText()">Speak</button>
+        <button onclick="clearText()">Clear</button>
+        <button onclick="saveText()">💾 Save</button>
+        <button onclick="loadText()">📂 Load</button>
+    </div>
+
+    <footer>Installable PWA | Works Offline | HTML5 + JS</footer>
+
+    <script>
+        function speakText() {
+            const text = document.getElementById('textInput').value.trim();
+            const lang = document.getElementById('languageSelect').value;
+            const rate = parseFloat(document.getElementById('rateRange').value);
+            const pitch = parseFloat(document.getElementById('pitchRange').value);
+
+            if (!text) {
+                alert("Please enter some text.");
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = rate;
+            utterance.pitch = pitch;
+            speechSynthesis.speak(utterance);
+        }
+
+        function clearText() {
+            document.getElementById('textInput').value = '';
+        }
+
+        function saveText() {
+            const text = document.getElementById('textInput').value;
+            localStorage.setItem('savedText', text);
+            alert("Text saved!");
+        }
+
+        function loadText() {
+            const saved = localStorage.getItem('savedText');
+            if (saved) {
+                document.getElementById('textInput').value = saved;
+            } else {
+                alert("No saved text found.");
+            }
+        }
+
+        function handleKey(event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                speakText();
+            }
+        }
+
+        function updateRateDisplay() {
+            document.getElementById('rateValue').textContent = document.getElementById('rateRange').value;
+        }
+
+        function updatePitchDisplay() {
+            document.getElementById('pitchValue').textContent = document.getElementById('pitchRange').value;
+        }
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log("✅ Service Worker registered"))
+                .catch(err => console.error("❌ Service Worker error:", err));
+        }
+    </script>
+</body>
+</html>
